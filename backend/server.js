@@ -11,10 +11,15 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 3001
 
-// OpenAI 클라이언트 초기화
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// OpenAI 클라이언트 생성 헬퍼 함수
+const createOpenAIClient = (apiKey) => {
+  return new OpenAI({
+    apiKey: apiKey || process.env.OPENAI_API_KEY,
+  })
+}
+
+// 기본 OpenAI 클라이언트 (환경 변수에서)
+const defaultOpenAI = createOpenAIClient()
 
 // 미들웨어 설정
 app.use(cors())
@@ -152,12 +157,18 @@ app.post('/api/embed', async (req, res) => {
       return res.status(400).json({ error: '청크가 제공되지 않았습니다.' })
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ error: 'OpenAI API 키가 설정되지 않았습니다.' })
+    // 헤더에서 API 키 가져오기 (클라이언트에서 보낸 키)
+    const apiKey = req.headers['x-openai-api-key'] || process.env.OPENAI_API_KEY
+
+    if (!apiKey) {
+      return res.status(400).json({ error: 'OpenAI API 키가 제공되지 않았습니다. 1단계에서 API 키를 입력해주세요.' })
     }
 
+    // 동적으로 OpenAI 클라이언트 생성
+    const openaiClient = createOpenAIClient(apiKey)
+
     // OpenAI Embedding API 호출
-    const response = await openai.embeddings.create({
+    const response = await openaiClient.embeddings.create({
       model: 'text-embedding-3-small',
       input: chunks,
     })
@@ -167,7 +178,14 @@ app.post('/api/embed', async (req, res) => {
     res.json({ embeddings })
   } catch (error) {
     console.error('Embedding error:', error)
-    res.status(500).json({ error: error.message || '임베딩 생성 중 오류가 발생했습니다.' })
+    const errorMessage = error.message || '임베딩 생성 중 오류가 발생했습니다.'
+    
+    // API 키 관련 에러 처리
+    if (errorMessage.includes('api key') || errorMessage.includes('authentication')) {
+      return res.status(401).json({ error: '유효하지 않은 OpenAI API 키입니다. API 키를 확인해주세요.' })
+    }
+    
+    res.status(500).json({ error: errorMessage })
   }
 })
 
@@ -184,12 +202,18 @@ app.post('/api/query', async (req, res) => {
       return res.status(400).json({ error: '컨텍스트가 제공되지 않았습니다.' })
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ error: 'OpenAI API 키가 설정되지 않았습니다.' })
+    // 헤더에서 API 키 가져오기 (클라이언트에서 보낸 키)
+    const apiKey = req.headers['x-openai-api-key'] || process.env.OPENAI_API_KEY
+
+    if (!apiKey) {
+      return res.status(400).json({ error: 'OpenAI API 키가 제공되지 않았습니다. 1단계에서 API 키를 입력해주세요.' })
     }
 
+    // 동적으로 OpenAI 클라이언트 생성
+    const openaiClient = createOpenAIClient(apiKey)
+
     // GPT API 호출 (RAG)
-    const completion = await openai.chat.completions.create({
+    const completion = await openaiClient.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
@@ -210,7 +234,87 @@ app.post('/api/query', async (req, res) => {
     res.json({ answer })
   } catch (error) {
     console.error('Query error:', error)
-    res.status(500).json({ error: error.message || '답변 생성 중 오류가 발생했습니다.' })
+    const errorMessage = error.message || '답변 생성 중 오류가 발생했습니다.'
+    
+    // API 키 관련 에러 처리
+    if (errorMessage.includes('api key') || errorMessage.includes('authentication')) {
+      return res.status(401).json({ error: '유효하지 않은 OpenAI API 키입니다. API 키를 확인해주세요.' })
+    }
+    
+    res.status(500).json({ error: errorMessage })
+  }
+})
+
+// API 키 유효성 검증
+app.post('/api/validate-key', async (req, res) => {
+  try {
+    const apiKey = req.headers['x-openai-api-key'] || req.body.apiKey
+
+    if (!apiKey) {
+      return res.status(400).json({ 
+        valid: false, 
+        message: 'API 키가 제공되지 않았습니다.' 
+      })
+    }
+
+    // 간단한 형식 검증
+    if (!apiKey.startsWith('sk-')) {
+      return res.json({ 
+        valid: false, 
+        message: 'API 키 형식이 올바르지 않습니다. (sk-로 시작해야 합니다)' 
+      })
+    }
+
+    // 실제 OpenAI API 호출로 검증 (가장 가벼운 임베딩 요청)
+    const openaiClient = createOpenAIClient(apiKey)
+    
+    try {
+      // 매우 작은 텍스트로 임베딩 요청하여 API 키 검증
+      await openaiClient.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: 'test',
+      })
+      
+      res.json({ 
+        valid: true, 
+        message: '유효한 키입니다.' 
+      })
+    } catch (error) {
+      const errorMessage = error.message?.toLowerCase() || ''
+      const errorType = error.status || error.response?.status
+      
+      // 401, 403 등의 인증 오류
+      if (errorType === 401 || errorType === 403) {
+        return res.json({ 
+          valid: false, 
+          message: '유효하지 않은 API 키입니다.' 
+        })
+      }
+      
+      // API 키 관련 에러 메시지
+      if (errorMessage.includes('api key') || 
+          errorMessage.includes('authentication') || 
+          errorMessage.includes('invalid') ||
+          errorMessage.includes('incorrect')) {
+        return res.json({ 
+          valid: false, 
+          message: '유효하지 않은 API 키입니다.' 
+        })
+      }
+      
+      // 기타 오류 (네트워크 오류 등)
+      console.error('Validation API error:', error.message)
+      return res.json({ 
+        valid: false, 
+        message: 'API 키 검증 중 오류가 발생했습니다. 네트워크를 확인해주세요.' 
+      })
+    }
+  } catch (error) {
+    console.error('Key validation error:', error)
+    res.status(500).json({ 
+      valid: false, 
+      message: 'API 키 검증 중 오류가 발생했습니다.' 
+    })
   }
 })
 
@@ -221,5 +325,5 @@ app.get('/api/health', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다.`)
-  console.log(`📝 OpenAI API 키: ${process.env.OPENAI_API_KEY ? '설정됨' : '설정 안됨'}`)
+  console.log(`📝 OpenAI API 키: ${process.env.OPENAI_API_KEY ? '환경 변수에서 설정됨 (클라이언트 API 키도 사용 가능)' : '환경 변수에 없음 (클라이언트에서 제공 필요)'}`)
 })

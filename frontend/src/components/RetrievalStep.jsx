@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import axios from 'axios'
+import apiClient from '../utils/axios'
 import './StepContent.css'
 
 function RetrievalStep({ vectorStore, chunks, onBack }) {
@@ -33,7 +33,7 @@ function RetrievalStep({ vectorStore, chunks, onBack }) {
 
     try {
       // 쿼리 임베딩 생성
-      const queryEmbeddingResponse = await axios.post('/api/embed', {
+      const queryEmbeddingResponse = await apiClient.post('/api/embed', {
         chunks: [query],
       })
 
@@ -55,7 +55,7 @@ function RetrievalStep({ vectorStore, chunks, onBack }) {
       // GPT API를 통해 답변 생성
       const context = topChunks.map((chunk) => chunk.text).join('\n\n')
 
-      const answerResponse = await axios.post('/api/query', {
+      const answerResponse = await apiClient.post('/api/query', {
         query,
         context,
       })

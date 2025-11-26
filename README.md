@@ -1,6 +1,7 @@
 # 📚 바이브코딩 RAG 웹앱 - 단계별 문서 이해 도우미
 
 TXT, PDF 파일을 업로드하면 GPT API와 임베딩 API를 활용해 RAG(Retrieval-Augmented Generation) 파이프라인을 실습할 수 있는 웹 애플리케이션입니다.
+JUN.VIBE & Cursor / 25.11.26
 
 ## 🌟 주요 기능
 

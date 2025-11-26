@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import apiClient from '../utils/axios'
 import './StepContent.css'
 
 function ChunkingStep({
@@ -38,7 +38,7 @@ function ChunkingStep({
     setIsProcessing(true)
     setError('')
     try {
-      const response = await axios.post('/api/chunk', {
+      const response = await apiClient.post('/api/chunk', {
         text,
         chunkSize: chunkConfig.chunkSize,
         overlap: chunkConfig.overlap,

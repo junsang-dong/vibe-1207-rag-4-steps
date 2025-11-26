@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import apiClient from '../utils/axios'
 import './StepContent.css'
 
 function EmbeddingStep({
@@ -34,7 +34,7 @@ function EmbeddingStep({
     try {
       addLog(`${chunks.length}개의 청크에 대해 임베딩을 생성합니다...`)
 
-      const response = await axios.post('/api/embed', {
+      const response = await apiClient.post('/api/embed', {
         chunks,
       })
 
