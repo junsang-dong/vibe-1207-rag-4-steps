@@ -1,10 +1,8 @@
-# 📚 바이브코딩 RAG 웹앱 - 단계별 문서 이해 도우미
+# 📚 RAG 4 Steps - RAG(Retrieval-Augmented Generation)의 작동 방식을 단계별로 이해할 수 있어요.
 
 TXT, PDF, MD 파일을 업로드하면 GPT API와 임베딩 API를 활용해 RAG(Retrieval-Augmented Generation) 파이프라인을 실습할 수 있는 웹 애플리케이션입니다.
 
 **리포지토리**: [https://github.com/junsang-dong/vibe-1207-rag-4-steps](https://github.com/junsang-dong/vibe-1207-rag-4-steps)
-
-JUN.VIBE & Cursor / 25.11.26
 
 ## 🌟 주요 기능
 
@@ -199,10 +197,6 @@ npm run dev
 - [배포 가이드](./DEPLOYMENT.md) - 다양한 배포 옵션
 - [환경 설정 가이드](./ENV_SETUP.md) - 환경 변수 설정 방법
 
-## 🤝 기여
-
-이슈나 개선 사항이 있으면 언제든지 제안해주세요!
-
 ## 📝 변경 이력
 
-- **2025.01.07**: 포트를 5176으로 변경, API 키 입력 및 검증 기능 추가, Vercel 배포 설정 업데이트
+- **2025.12.07**: 포트 변경, API 키 입력 및 검증 기능 추가, Vercel 배포 설정 업데이트
