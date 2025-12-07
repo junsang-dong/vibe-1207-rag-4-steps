@@ -73,14 +73,51 @@ function EmbeddingStep({
       )}
 
       {embeddings.length > 0 && (
-        <div className="result-box">
-          <div className="result-title">✓ 임베딩 완료</div>
-          <div className="result-content">
-            <p>생성된 임베딩 수: {embeddings.length}개</p>
-            <p>임베딩 차원: {embeddings[0]?.length || 0}차원</p>
-            <p>벡터 스토어 크기: {vectorStore?.length || 0}개 항목</p>
+        <>
+          <div className="result-box">
+            <div className="result-title">✓ 임베딩 완료</div>
+            <div className="result-content">
+              <p>생성된 임베딩 수: {embeddings.length}개</p>
+              <p>임베딩 차원: {embeddings[0]?.length || 0}차원</p>
+              <p>벡터 스토어 크기: {vectorStore?.length || 0}개 항목</p>
+            </div>
           </div>
-        </div>
+
+          {chunks.length > 0 && embeddings.length > 0 && (
+            <div className="embedding-example-box">
+              <div className="result-title">📊 임베딩 예시</div>
+              <div className="embedding-example-content">
+                <div className="embedding-example-item">
+                  <div className="embedding-example-label">청크 #1 텍스트:</div>
+                  <div className="embedding-example-text">{chunks[0]}</div>
+                </div>
+                <div className="embedding-example-item">
+                  <div className="embedding-example-label">청크 #1 임베딩 값:</div>
+                  <div className="embedding-example-embedding">
+                    {(() => {
+                      const chunkTextLength = chunks[0]?.length || 0
+                      const embeddingArray = embeddings[0] || []
+                      
+                      // 청크 텍스트 길이를 기준으로 표시할 임베딩 요소 수 계산
+                      // 평균적으로 각 숫자가 약 8-10자 (예: -0.012345)로 가정
+                      const charsPerNumber = 10
+                      const maxNumbers = Math.max(1, Math.floor(chunkTextLength / charsPerNumber))
+                      
+                      if (embeddingArray.length <= maxNumbers) {
+                        // 전체 배열 표시
+                        return JSON.stringify(embeddingArray)
+                      } else {
+                        // 일부만 표시
+                        const partialArray = embeddingArray.slice(0, maxNumbers)
+                        return JSON.stringify(partialArray) + ` ... (총 ${embeddingArray.length}개 요소 중 ${maxNumbers}개만 표시)`
+                      }
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {logs.length > 0 && (

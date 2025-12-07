@@ -151,7 +151,7 @@ function UploadStep({ file, setFile, text, setText, onNext }) {
     <div className="step-content">
       <h2>① 파일 업로드</h2>
       <p className="step-description">
-        TXT 또는 PDF 파일을 업로드하여 문서를 분석할 준비를 합니다.
+        TXT, PDF 또는 MD 파일을 업로드하여 문서를 분석할 준비를 합니다.
       </p>
 
       <div className="api-key-section">
@@ -198,13 +198,13 @@ function UploadStep({ file, setFile, text, setText, onNext }) {
         <div className="upload-icon">📄</div>
         <h3>파일을 드래그하여 업로드</h3>
         <p>또는 클릭하여 파일 선택</p>
-        <p className="upload-hint">지원 형식: TXT, PDF</p>
+        <p className="upload-hint">지원 형식: TXT, PDF, MD</p>
       </div>
 
       <input
         ref={fileInputRef}
         type="file"
-        accept=".txt,.pdf"
+        accept=".txt,.pdf,.md"
         onChange={handleFileSelect}
         className="file-input"
       />

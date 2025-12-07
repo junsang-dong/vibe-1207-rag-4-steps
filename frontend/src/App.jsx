@@ -48,8 +48,8 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>📚 바이브코딩 RAG 웹앱</h1>
-        <p>단계별 문서 이해 도우미</p>
+        <h1>RAG 4 Steps</h1>
+        <p>RAG(Retrieval-Augmented Generation)의 작동 방식을 단계별로 이해할 수 있어요.</p>
       </header>
 
       <StepIndicator 
@@ -100,6 +100,42 @@ function App() {
           />
         )}
       </main>
+
+      <footer className="app-footer">
+        <div className="footer-content">
+          <div className="footer-section">
+            <h3>기술 스택</h3>
+            <div className="tech-stack">
+              <div className="tech-category">
+                <span className="tech-label">Frontend:</span>
+                <span className="tech-items">React, Vite, Axios</span>
+              </div>
+              <div className="tech-category">
+                <span className="tech-label">Backend:</span>
+                <span className="tech-items">Node.js, Express, Multer</span>
+              </div>
+              <div className="tech-category">
+                <span className="tech-label">AI:</span>
+                <span className="tech-items">OpenAI API (GPT-4o-mini, text-embedding-3-small)</span>
+              </div>
+            </div>
+          </div>
+          <div className="footer-section">
+            <h3>개발자 정보</h3>
+            <div className="developer-info">
+              <p>동준상 · 넥스트플랫폼</p>
+              <p>
+                <a href="http://www.nextpaltform.net" target="_blank" rel="noopener noreferrer">
+                  www.nextpaltform.net
+                </a>
+              </p>
+              <p>
+                <a href="mailto:naebon@nave.com">naebon@nave.com</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

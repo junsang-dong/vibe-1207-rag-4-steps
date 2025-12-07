@@ -2,10 +2,10 @@ import './StepIndicator.css'
 
 function StepIndicator({ currentStep, onStepClick }) {
   const steps = [
-    { number: 1, label: '업로드' },
+    { number: 1, label: 'File Upload' },
     { number: 2, label: 'Chunking' },
     { number: 3, label: 'Embedding' },
-    { number: 4, label: 'Retrieval 테스트' },
+    { number: 4, label: 'Retrieval Test' },
   ]
 
   const getStepStatus = (stepNumber) => {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import apiClient from '../utils/axios'
 import './StepContent.css'
 
@@ -7,6 +7,8 @@ function RetrievalStep({ vectorStore, chunks, onBack }) {
   const [isSearching, setIsSearching] = useState(false)
   const [searchResults, setSearchResults] = useState(null)
   const [answer, setAnswer] = useState('')
+  const [keywords, setKeywords] = useState([])
+  const [isLoadingKeywords, setIsLoadingKeywords] = useState(false)
 
   const cosineSimilarity = (vecA, vecB) => {
     if (!vecA || !vecB || vecA.length !== vecB.length) return 0
@@ -75,12 +77,56 @@ function RetrievalStep({ vectorStore, chunks, onBack }) {
     }
   }
 
+  // 키워드 추출
+  useEffect(() => {
+    const extractKeywords = async () => {
+      if (!chunks || chunks.length === 0) return
+
+      setIsLoadingKeywords(true)
+      try {
+        const response = await apiClient.post('/api/extract-keywords', {
+          chunks,
+        })
+        setKeywords(response.data.keywords || [])
+      } catch (err) {
+        console.error('Keyword extraction error:', err)
+        setKeywords([])
+      } finally {
+        setIsLoadingKeywords(false)
+      }
+    }
+
+    extractKeywords()
+  }, [chunks])
+
+  const handleKeywordClick = (keyword) => {
+    setQuery(keyword)
+  }
+
   return (
     <div className="step-content">
       <h2>④ Retrieval 테스트 (검색 및 답변)</h2>
       <p className="step-description">
         질문을 입력하면 관련된 청크를 찾아 GPT가 답변을 생성합니다.
       </p>
+
+      {keywords.length > 0 && (
+        <div className="keywords-section">
+          <p className="keywords-label">💡 추천 키워드:</p>
+          <div className="keywords-list">
+            {keywords.map((keyword, index) => (
+              <button
+                key={index}
+                className="keyword-tag"
+                onClick={() => handleKeywordClick(keyword)}
+                type="button"
+              >
+                {keyword}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="query-section">
         <textarea

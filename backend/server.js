@@ -33,10 +33,34 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'text/plain' || file.mimetype === 'application/pdf') {
+    const allowedMimeTypes = [
+      'text/plain',
+      'application/pdf',
+      'text/markdown',
+      'text/x-markdown',
+      'application/octet-stream' // 일부 브라우저에서 MD 파일을 이 타입으로 보낼 수 있음
+    ]
+    const allowedExtensions = ['.txt', '.pdf', '.md']
+    const fileName = file.originalname.toLowerCase()
+    
+    const hasValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext))
+    const hasValidMimeType = allowedMimeTypes.includes(file.mimetype)
+    
+    // 디버깅을 위한 로그
+    console.log('File upload attempt:', {
+      filename: file.originalname,
+      mimetype: file.mimetype,
+      hasValidExtension,
+      hasValidMimeType
+    })
+    
+    // 확장자 체크를 우선시 (MIME 타입이 부정확할 수 있음)
+    if (hasValidExtension) {
+      cb(null, true)
+    } else if (hasValidMimeType) {
       cb(null, true)
     } else {
-      cb(new Error('지원하지 않는 파일 형식입니다. TXT 또는 PDF만 가능합니다.'))
+      cb(new Error('지원하지 않는 파일 형식입니다. TXT, PDF 또는 MD만 가능합니다.'))
     }
   },
 })
@@ -49,14 +73,23 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     }
 
     let text = ''
+    const fileName = req.file.originalname.toLowerCase()
+    const isMarkdown = fileName.endsWith('.md') || 
+                      req.file.mimetype === 'text/markdown' || 
+                      req.file.mimetype === 'text/x-markdown' ||
+                      (req.file.mimetype === 'application/octet-stream' && fileName.endsWith('.md'))
 
-    if (req.file.mimetype === 'text/plain') {
-      // TXT 파일 처리
-      text = req.file.buffer.toString('utf-8')
-    } else if (req.file.mimetype === 'application/pdf') {
+    // 확장자 기반으로 파일 타입 판단 (MIME 타입이 부정확할 수 있음)
+    if (fileName.endsWith('.pdf')) {
       // PDF 파일 처리
       const pdfData = await pdfParse(req.file.buffer)
       text = pdfData.text
+    } else if (fileName.endsWith('.txt') || fileName.endsWith('.md') || 
+               req.file.mimetype === 'text/plain' || isMarkdown) {
+      // TXT 또는 MD 파일 처리
+      text = req.file.buffer.toString('utf-8')
+    } else {
+      return res.status(400).json({ error: '지원하지 않는 파일 형식입니다. TXT, PDF 또는 MD만 가능합니다.' })
     }
 
     if (!text || text.trim().length === 0) {
@@ -242,6 +275,61 @@ app.post('/api/query', async (req, res) => {
     }
     
     res.status(500).json({ error: errorMessage })
+  }
+})
+
+// 키워드 추출 API
+app.post('/api/extract-keywords', async (req, res) => {
+  try {
+    const { chunks } = req.body
+
+    if (!chunks || !Array.isArray(chunks) || chunks.length === 0) {
+      return res.status(400).json({ error: '청크가 제공되지 않았습니다.' })
+    }
+
+    // 모든 청크를 하나의 텍스트로 합치기
+    const fullText = chunks.join(' ').toLowerCase()
+
+    // 한국어 불용어 목록
+    const koreanStopWords = [
+      '이', '가', '을', '를', '에', '의', '와', '과', '은', '는', '도', '로', '으로',
+      '에서', '에게', '께', '한테', '더', '많이', '있다', '없다', '하다', '되다', '이다',
+      '그', '그것', '이것', '저것', '그런', '이런', '저런', '그렇게', '이렇게', '저렇게',
+      '때', '경우', '것', '수', '것', '등', '및', '또한', '또', '그리고', '하지만', '그러나'
+    ]
+
+    // 영어 불용어 목록
+    const englishStopWords = [
+      'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
+      'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been', 'be', 'have', 'has', 'had',
+      'do', 'does', 'did', 'will', 'would', 'should', 'could', 'may', 'might', 'must',
+      'this', 'that', 'these', 'those', 'it', 'its', 'they', 'them', 'their', 'there',
+      'what', 'which', 'who', 'when', 'where', 'why', 'how', 'can', 'cannot'
+    ]
+
+    const allStopWords = [...koreanStopWords, ...englishStopWords]
+
+    // 단어 추출 (한글, 영문, 숫자 포함, 최소 2글자 이상)
+    const words = fullText.match(/[가-힣a-zA-Z0-9]{2,}/g) || []
+
+    // 단어 빈도 계산
+    const wordFreq = {}
+    words.forEach(word => {
+      if (!allStopWords.includes(word) && word.length >= 2) {
+        wordFreq[word] = (wordFreq[word] || 0) + 1
+      }
+    })
+
+    // 빈도순으로 정렬하고 상위 5개 선택
+    const sortedWords = Object.entries(wordFreq)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([word]) => word)
+
+    res.json({ keywords: sortedWords })
+  } catch (error) {
+    console.error('Keyword extraction error:', error)
+    res.status(500).json({ error: error.message || '키워드 추출 중 오류가 발생했습니다.' })
   }
 })
 
