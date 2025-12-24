@@ -5,8 +5,15 @@ import pdfParse from 'pdf-parse'
 import fs from 'fs/promises'
 import OpenAI from 'openai'
 import dotenv from 'dotenv'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
 
-dotenv.config()
+// 현재 파일의 디렉토리 경로 가져오기
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// .env 파일 경로 명시적으로 지정
+dotenv.config({ path: join(__dirname, '.env') })
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -211,14 +218,31 @@ app.post('/api/embed', async (req, res) => {
     res.json({ embeddings })
   } catch (error) {
     console.error('Embedding error:', error)
+    console.error('Error details:', {
+      message: error.message,
+      status: error.status,
+      response: error.response?.data,
+      stack: error.stack
+    })
+    
     const errorMessage = error.message || '임베딩 생성 중 오류가 발생했습니다.'
+    const errorStatus = error.status || error.response?.status || 500
     
     // API 키 관련 에러 처리
-    if (errorMessage.includes('api key') || errorMessage.includes('authentication')) {
-      return res.status(401).json({ error: '유효하지 않은 OpenAI API 키입니다. API 키를 확인해주세요.' })
+    if (errorMessage.toLowerCase().includes('api key') || 
+        errorMessage.toLowerCase().includes('authentication') ||
+        errorMessage.toLowerCase().includes('invalid') ||
+        errorStatus === 401 || errorStatus === 403) {
+      return res.status(401).json({ 
+        error: '유효하지 않은 OpenAI API 키입니다. API 키를 확인해주세요.',
+        details: errorMessage
+      })
     }
     
-    res.status(500).json({ error: errorMessage })
+    res.status(500).json({ 
+      error: errorMessage,
+      details: error.response?.data || error.message
+    })
   }
 })
 

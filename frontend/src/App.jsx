@@ -45,95 +45,123 @@ function App() {
     }
   }
 
+  const handleExportSession = () => {
+    const sessionData = {
+      file: file ? { name: file.name, size: file.size } : null,
+      text: text,
+      chunks: chunks,
+      chunkConfig: chunkConfig,
+      embeddings: embeddings,
+      vectorStore: vectorStore,
+      currentStep: currentStep
+    }
+    const dataStr = JSON.stringify(sessionData, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `rag-session-${new Date().toISOString()}.json`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleResetSession = () => {
+    if (window.confirm('세션을 초기화하시겠습니까? 모든 진행 상황이 삭제됩니다.')) {
+      setCurrentStep(1)
+      setFile(null)
+      setText('')
+      setChunks([])
+      setEmbeddings([])
+      setVectorStore(null)
+      setChunkConfig({ chunkSize: 500, overlap: 100 })
+    }
+  }
+
   return (
     <div className="app">
       <header className="app-header">
-        <h1>RAG 4 Steps</h1>
-        <p>RAG(Retrieval-Augmented Generation)의 작동 방식을 단계별로 이해할 수 있어요.</p>
+        <div className="header-content">
+          <div className="header-title-section">
+            <h1>RAG Studio</h1>
+            <p className="header-description">
+              RAG의 작동 방식을 Chunking, Embedding, Retrieval 단계별로 보여주는 교육용앱
+            </p>
+          </div>
+          <div className="header-actions">
+            <button className="btn-header" onClick={handleExportSession}>
+              세션 내보내기
+            </button>
+            <button className="btn-header btn-header-danger" onClick={handleResetSession}>
+              세션 초기화
+            </button>
+          </div>
+        </div>
       </header>
 
-      <StepIndicator 
-        currentStep={currentStep} 
-        onStepClick={resetToStep}
-      />
-
-      <main className="app-main">
-        {currentStep === 1 && (
-          <UploadStep
-            file={file}
-            setFile={setFile}
-            text={text}
-            setText={setText}
-            onNext={handleNext}
+      <div className="app-container">
+        <aside className="app-sidebar">
+          <StepIndicator 
+            currentStep={currentStep} 
+            onStepClick={resetToStep}
           />
-        )}
+        </aside>
 
-        {currentStep === 2 && (
-          <ChunkingStep
-            text={text}
-            chunks={chunks}
-            setChunks={setChunks}
-            chunkConfig={chunkConfig}
-            setChunkConfig={setChunkConfig}
-            onNext={handleNext}
-            onBack={handleBack}
-          />
-        )}
+        <main className="app-main">
+          {currentStep === 1 && (
+            <UploadStep
+              file={file}
+              setFile={setFile}
+              text={text}
+              setText={setText}
+              onNext={handleNext}
+            />
+          )}
 
-        {currentStep === 3 && (
-          <EmbeddingStep
-            chunks={chunks}
-            embeddings={embeddings}
-            setEmbeddings={setEmbeddings}
-            vectorStore={vectorStore}
-            setVectorStore={setVectorStore}
-            onNext={handleNext}
-            onBack={handleBack}
-          />
-        )}
+          {currentStep === 2 && (
+            <ChunkingStep
+              text={text}
+              chunks={chunks}
+              setChunks={setChunks}
+              chunkConfig={chunkConfig}
+              setChunkConfig={setChunkConfig}
+              onNext={handleNext}
+              onBack={handleBack}
+            />
+          )}
 
-        {currentStep === 4 && (
-          <RetrievalStep
-            vectorStore={vectorStore}
-            chunks={chunks}
-            onBack={handleBack}
-          />
-        )}
-      </main>
+          {currentStep === 3 && (
+            <EmbeddingStep
+              chunks={chunks}
+              embeddings={embeddings}
+              setEmbeddings={setEmbeddings}
+              vectorStore={vectorStore}
+              setVectorStore={setVectorStore}
+              onNext={handleNext}
+              onBack={handleBack}
+            />
+          )}
+
+          {currentStep === 4 && (
+            <RetrievalStep
+              vectorStore={vectorStore}
+              chunks={chunks}
+              file={file}
+              text={text}
+              chunkConfig={chunkConfig}
+              embeddings={embeddings}
+              onBack={handleBack}
+            />
+          )}
+        </main>
+      </div>
 
       <footer className="app-footer">
         <div className="footer-content">
-          <div className="footer-section">
-            <h3>기술 스택</h3>
-            <div className="tech-stack">
-              <div className="tech-category">
-                <span className="tech-label">Frontend:</span>
-                <span className="tech-items">React, Vite, Axios</span>
-              </div>
-              <div className="tech-category">
-                <span className="tech-label">Backend:</span>
-                <span className="tech-items">Node.js, Express, Multer</span>
-              </div>
-              <div className="tech-category">
-                <span className="tech-label">AI:</span>
-                <span className="tech-items">OpenAI API (GPT-4o-mini, text-embedding-3-small)</span>
-              </div>
-            </div>
-          </div>
-          <div className="footer-section">
-            <h3>개발자 정보</h3>
-            <div className="developer-info">
-              <p>동준상 · 넥스트플랫폼</p>
-              <p>
-                <a href="http://www.nextpaltform.net" target="_blank" rel="noopener noreferrer">
-                  www.nextpaltform.net
-                </a>
-              </p>
-              <p>
-                <a href="mailto:naebon@nave.com">naebon@nave.com</a>
-              </p>
-            </div>
-          </div>
+          <ul className="footer-list">
+            <li>교육 목적의 기능 제한 버전</li>
+            <li>기술 스택: React, Vite, Node.js, Express, OpenAI API (GPT-4o-mini, text-embedding-3-small)</li>
+            <li>개발자 정보: JUN / naebon@naver.com / www.nextplatform.net</li>
+          </ul>
         </div>
       </footer>
     </div>

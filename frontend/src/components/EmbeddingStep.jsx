@@ -52,9 +52,14 @@ function EmbeddingStep({
       addLog(`✓ 벡터 스토어가 메모리에 저장되었습니다.`)
       setIsProcessing(false)
     } catch (err) {
-      addLog(`✗ 오류 발생: ${err.message}`)
+      const errorMessage = err.response?.data?.error || err.response?.data?.details || err.message || '알 수 없는 오류가 발생했습니다.'
+      addLog(`✗ 오류 발생: ${errorMessage}`)
+      if (err.response?.data?.details) {
+        addLog(`상세 정보: ${err.response.data.details}`)
+      }
       setIsProcessing(false)
       console.error('Embedding error:', err)
+      console.error('Error response:', err.response?.data)
     }
   }
 
@@ -95,22 +100,38 @@ function EmbeddingStep({
                   <div className="embedding-example-label">청크 #1 임베딩 값:</div>
                   <div className="embedding-example-embedding">
                     {(() => {
-                      const chunkTextLength = chunks[0]?.length || 0
                       const embeddingArray = embeddings[0] || []
                       
-                      // 청크 텍스트 길이를 기준으로 표시할 임베딩 요소 수 계산
-                      // 평균적으로 각 숫자가 약 8-10자 (예: -0.012345)로 가정
-                      const charsPerNumber = 10
-                      const maxNumbers = Math.max(1, Math.floor(chunkTextLength / charsPerNumber))
-                      
-                      if (embeddingArray.length <= maxNumbers) {
-                        // 전체 배열 표시
-                        return JSON.stringify(embeddingArray)
-                      } else {
-                        // 일부만 표시
-                        const partialArray = embeddingArray.slice(0, maxNumbers)
-                        return JSON.stringify(partialArray) + ` ... (총 ${embeddingArray.length}개 요소 중 ${maxNumbers}개만 표시)`
+                      if (embeddingArray.length === 0) {
+                        return '임베딩 값이 없습니다.'
                       }
+                      
+                      // 최대 100개까지만 표시
+                      const maxDisplay = 100
+                      const displayArray = embeddingArray.slice(0, maxDisplay)
+                      const isTruncated = embeddingArray.length > maxDisplay
+                      
+                      // 임베딩 값을 포맷팅하여 표시 (한 줄에 10개씩)
+                      const formatEmbedding = (arr) => {
+                        const itemsPerLine = 10
+                        const lines = []
+                        
+                        for (let i = 0; i < arr.length; i += itemsPerLine) {
+                          const line = arr.slice(i, i + itemsPerLine)
+                            .map(val => val.toFixed(6))
+                            .join(', ')
+                          lines.push(line)
+                        }
+                        
+                        return `[${lines.join(',\n ')}]`
+                      }
+                      
+                      // 최대 100개까지 표시 (줄바꿈 포함)
+                      let result = formatEmbedding(displayArray)
+                      if (isTruncated) {
+                        result += `\n... (총 ${embeddingArray.length}개 요소 중 ${maxDisplay}개만 표시)`
+                      }
+                      return result
                     })()}
                   </div>
                 </div>

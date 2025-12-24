@@ -1,59 +1,120 @@
 .step-indicator {
   display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 40px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .step-item {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 15px;
   cursor: pointer;
-  padding: 10px 20px;
-  border-radius: 25px;
+  padding: 16px;
+  border-radius: 10px;
   transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.step-item:hover:not(.inactive) {
+  background: #f8fafc;
+  border-color: #e2e8f0;
 }
 
 .step-number {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
+  font-weight: 700;
+  font-size: 1rem;
   transition: all 0.3s;
 }
 
-.step-item.active .step-number {
-  background: #667eea;
+.step-item.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.step-item.active:hover {
+  background: #e5e7eb;
+  border-color: #e5e7eb;
+}
+
+.step-item.active:hover .step-title {
+  color: #1e293b;
+}
+
+.step-item.active:hover .step-description {
+  color: #64748b;
+}
+
+.step-item.active:hover .step-number {
+  background: #3b82f6;
   color: white;
-  transform: scale(1.1);
+}
+
+.step-item.active .step-number {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
 .step-item.completed .step-number {
-  background: #10b981;
+  background: #1e40af;
   color: white;
 }
 
 .step-item.inactive .step-number {
-  background: #e5e7eb;
-  color: #6b7280;
+  background: #e2e8f0;
+  color: #64748b;
 }
 
-.step-label {
-  font-weight: 500;
-  color: #374151;
+.step-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.step-item.active .step-label {
-  color: #ffffff;
+.step-title {
   font-weight: 600;
+  font-size: 0.95rem;
+  color: #1e293b;
+  transition: all 0.3s;
+}
+
+.step-description {
+  font-size: 0.8rem;
+  color: #64748b;
+  transition: all 0.3s;
+}
+
+.step-item.active .step-title {
+  color: white;
+}
+
+.step-item.active .step-description {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.step-item.completed .step-title {
+  color: #1e40af;
+}
+
+.step-item.completed .step-description {
+  color: #64748b;
 }
 
 .step-item.inactive {
   cursor: default;
+}
+
+.step-item.inactive .step-title {
+  color: #94a3b8;
+}
+
+.step-item.inactive .step-description {
+  color: #cbd5e1;
 }

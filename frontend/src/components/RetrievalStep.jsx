@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import apiClient from '../utils/axios'
 import './StepContent.css'
 
-function RetrievalStep({ vectorStore, chunks, onBack }) {
+function RetrievalStep({ vectorStore, chunks, file, text, chunkConfig, embeddings, onBack }) {
   const [query, setQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [searchResults, setSearchResults] = useState(null)
@@ -103,6 +103,99 @@ function RetrievalStep({ vectorStore, chunks, onBack }) {
     setQuery(keyword)
   }
 
+  const generateReport = () => {
+    const report = []
+    
+    // 헤더
+    report.push('# RAG 프로세스 보고서\n')
+    report.push(`**생성 일시**: ${new Date().toLocaleString('ko-KR')}\n`)
+    report.push('---\n')
+    
+    // 1단계: 업로드 & 파싱
+    report.push('## ① 업로드 & 파싱\n')
+    if (file) {
+      report.push(`**파일명**: ${file.name}`)
+      report.push(`**파일 크기**: ${(file.size / 1024).toFixed(2)} KB\n`)
+    }
+    if (text) {
+      report.push(`**추출된 텍스트 길이**: ${text.length.toLocaleString()}자\n`)
+      report.push('**추출된 텍스트 미리보기**:\n')
+      report.push('```')
+      report.push(text.substring(0, 500) + (text.length > 500 ? '...' : ''))
+      report.push('```\n')
+    }
+    report.push('---\n')
+    
+    // 2단계: 청킹
+    report.push('## ② 청킹\n')
+    if (chunkConfig) {
+      report.push(`**청크 크기**: ${chunkConfig.chunkSize}자`)
+      report.push(`**중첩 크기**: ${chunkConfig.overlap}자\n`)
+    }
+    if (chunks && chunks.length > 0) {
+      report.push(`**생성된 청크 수**: ${chunks.length}개\n`)
+      report.push('**청크 목록**:\n')
+      chunks.forEach((chunk, index) => {
+        report.push(`### 청크 #${index + 1}`)
+        report.push(`**길이**: ${chunk.length}자`)
+        report.push(`**내용**:`)
+        report.push('```')
+        report.push(chunk.substring(0, 200) + (chunk.length > 200 ? '...' : ''))
+        report.push('```\n')
+      })
+    }
+    report.push('---\n')
+    
+    // 3단계: 임베딩
+    report.push('## ③ 임베딩\n')
+    if (embeddings && embeddings.length > 0) {
+      report.push(`**임베딩 수**: ${embeddings.length}개`)
+      report.push(`**임베딩 차원**: ${embeddings[0]?.length || 0}차원`)
+      report.push(`**벡터 스토어 크기**: ${vectorStore?.length || 0}개 항목\n`)
+    }
+    report.push('---\n')
+    
+    // 4단계: 검색 및 답변
+    report.push('## ④ 검색 및 답변\n')
+    if (query) {
+      report.push(`**질문**: ${query}\n`)
+    }
+    if (searchResults && searchResults.length > 0) {
+      report.push('### 검색 결과\n')
+      searchResults.forEach((result, index) => {
+        report.push(`#### 검색 결과 #${index + 1}`)
+        report.push(`**유사도**: ${(result.similarity * 100).toFixed(2)}%`)
+        report.push(`**청크 ID**: ${result.id}`)
+        report.push(`**내용**:`)
+        report.push('```')
+        report.push(result.text)
+        report.push('```\n')
+      })
+    }
+    if (answer) {
+      report.push('### GPT 답변\n')
+      report.push(answer)
+      report.push('\n')
+    }
+    report.push('---\n')
+    
+    // 푸터
+    report.push('**보고서 생성**: RAG Studio')
+    
+    return report.join('\n')
+  }
+
+  const handleDownloadReport = () => {
+    const reportContent = generateReport()
+    const blob = new Blob([reportContent], { type: 'text/markdown;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `rag-report-${new Date().toISOString().split('T')[0]}.md`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="step-content">
       <h2>④ Retrieval 테스트 (검색 및 답변)</h2>
@@ -174,6 +267,14 @@ function RetrievalStep({ vectorStore, chunks, onBack }) {
             <div className="result-box">
               <div className="result-title">💡 GPT 답변</div>
               <div className="result-content">{answer}</div>
+              <div style={{ marginTop: '20px' }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleDownloadReport}
+                >
+                  📄 RAG 보고서 다운로드 (.md)
+                </button>
+              </div>
             </div>
           )}
         </div>

@@ -14,9 +14,10 @@
 }
 
 .step-content h2 {
-  color: #374151;
+  color: #1e293b;
   margin-bottom: 10px;
   font-size: 2rem;
+  font-weight: 700;
 }
 
 .step-description {
@@ -59,8 +60,8 @@
 
 .api-key-input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
 
 .btn-validate {
@@ -71,15 +72,15 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  background: #667eea;
+  background: #1e3a8a;
   color: white;
   white-space: nowrap;
 }
 
 .btn-validate:hover:not(:disabled) {
-  background: #5568d3;
+  background: #1e40af;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4);
 }
 
 .btn-validate:disabled {
@@ -125,13 +126,13 @@
 }
 
 .upload-area:hover {
-  border-color: #667eea;
+  border-color: #1e3a8a;
   background: #f3f4f6;
 }
 
 .upload-area.dragover {
-  border-color: #667eea;
-  background: #eef2ff;
+  border-color: #1e3a8a;
+  background: #eff6ff;
 }
 
 .upload-icon {
@@ -160,14 +161,14 @@
 }
 
 .btn-primary {
-  background: #667eea;
+  background: #1e3a8a;
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #5568d3;
+  background: #1e40af;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4);
 }
 
 .btn-secondary {
@@ -224,7 +225,7 @@
 
 .config-value {
   font-size: 1.1rem;
-  color: #667eea;
+  color: #1e3a8a;
   font-weight: 600;
 }
 
@@ -242,7 +243,7 @@
   padding: 15px;
   margin-bottom: 15px;
   border-radius: 10px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #1e3a8a;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -255,7 +256,7 @@
 
 .chunk-index {
   font-weight: 600;
-  color: #667eea;
+  color: #1e3a8a;
 }
 
 .chunk-size {
@@ -296,7 +297,7 @@
 
 .query-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #1e3a8a;
 }
 
 .result-section {
@@ -344,7 +345,7 @@
 
 .embedding-example-label {
   font-weight: 600;
-  color: #667eea;
+  color: #1e3a8a;
   font-size: 0.95rem;
 }
 
@@ -367,11 +368,13 @@
   border-radius: 8px;
   font-family: 'Courier New', monospace;
   font-size: 0.85rem;
-  line-height: 1.5;
-  overflow-x: auto;
+  line-height: 1.6;
+  white-space: pre-wrap;
   word-wrap: break-word;
-  max-height: 300px;
+  overflow-wrap: break-word;
+  max-height: 400px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .loading {
@@ -382,7 +385,7 @@
 
 .spinner {
   border: 4px solid #f3f4f6;
-  border-top: 4px solid #667eea;
+  border-top: 4px solid #1e3a8a;
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -396,7 +399,7 @@
 }
 
 .file-info {
-  background: #eef2ff;
+  background: #eff6ff;
   padding: 15px;
   border-radius: 10px;
   margin-top: 20px;
@@ -416,7 +419,7 @@
 }
 
 .text-preview {
-  color: #667eea;
+  color: #1e3a8a;
   font-weight: 600;
 }
 
@@ -452,7 +455,7 @@
 
 .keyword-tag {
   padding: 8px 16px;
-  background: #667eea;
+  background: #1e3a8a;
   color: white;
   border: none;
   border-radius: 20px;
@@ -463,9 +466,9 @@
 }
 
 .keyword-tag:hover {
-  background: #5568d3;
+  background: #1e40af;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 8px rgba(30, 58, 138, 0.3);
 }
 
 .keyword-tag:active {

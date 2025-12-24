@@ -1,7 +1,7 @@
 {
   "name": "vibe-rag-webapp",
   "version": "1.0.0",
-  "description": "바이브코딩 RAG 웹앱 - 단계별 문서 이해 도우미",
+  "description": "RAG Studio - RAG(Retrieval-Augmented Generation) 웹 애플리케이션",
   "type": "module",
   "scripts": {
     "install:frontend": "cd frontend && npm install",
